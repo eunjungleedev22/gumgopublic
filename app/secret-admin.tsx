@@ -15,15 +15,15 @@ import {
 
 import type { Event, EventType, SiteData } from '@/constants/schema';
 import {
+  isValidISODate,
+  isValidURL,
   loadSiteData,
   saveSiteData,
   sortEvents,
   validateSiteData,
-  isValidISODate,
-  isValidURL,
 } from '@/constants/site-data';
 
-const ADMIN_PASSCODE = 'gumgo2026';
+const ADMIN_PASSCODE = process.env.EXPO_PUBLIC_ADMIN_PASSCODE;
 
 const COLORS = {
   bg: '#050505',

@@ -7,9 +7,7 @@ import { Animated, Dimensions, ImageBackground, StyleSheet, Text, TouchableOpaci
 
 const { height } = Dimensions.get('window');
 
-const SHEETS_CSV_URL =
-  process.env.EXPO_PUBLIC_SHEETS_CSV_URL ??
-  'EXPO_PUBLIC_SHEETS_CSV_URL=https://docs.google.com/spreadsheets/d/e/2PACX-1vR3lSfcKyRQkO-p4SPw2HQ8u_bH2xITiV9nou0S_jmYpoQCqv-uRRBS37xEModWb9uKKWD4LkGQB8cU/pub?output=csv'; // e.g. "https://docs.google.com/spreadsheets/d/e/<PUBLIC>/pub?output=csv"
+const SHEETS_CSV_URL = process.env.EXPO_PUBLIC_SHEETS_CSV_URL ?? 'MISSING_URL';
 
 function csvToJSON(csvText: string) {
   // Minimal RFC4180-ish CSV parser (handles quotes, commas, newlines).
