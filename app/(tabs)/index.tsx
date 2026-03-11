@@ -1,198 +1,375 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Link } from 'expo-router';
+import type { Event, EventType } from '@/constants/schema';
+import { formatDateDisplay, loadSiteData, sortEvents, type SiteData } from '@/constants/site-data';
+import { useFocusEffect } from '@react-navigation/native';
+import * as Haptics from 'expo-haptics';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Dimensions, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-type Countdown = {
-  isPast: boolean;
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-};
+const { height } = Dimensions.get('window');
 
-function computeCountdown(targetMs: number, nowMs: number): Countdown {
-  const diff = targetMs - nowMs;
-  const isPast = diff <= 0;
-  const totalSeconds = Math.max(0, Math.floor(diff / 1000));
-  const days = Math.floor(totalSeconds / (60 * 60 * 24));
-  const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
-  const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
-  const seconds = totalSeconds % 60;
-  return { isPast, days, hours, minutes, seconds };
+const SHEETS_CSV_URL =
+  process.env.EXPO_PUBLIC_SHEETS_CSV_URL ??
+  'EXPO_PUBLIC_SHEETS_CSV_URL=https://docs.google.com/spreadsheets/d/e/2PACX-1vR3lSfcKyRQkO-p4SPw2HQ8u_bH2xITiV9nou0S_jmYpoQCqv-uRRBS37xEModWb9uKKWD4LkGQB8cU/pub?output=csv'; // e.g. "https://docs.google.com/spreadsheets/d/e/<PUBLIC>/pub?output=csv"
+
+function csvToJSON(csvText: string) {
+  // Minimal RFC4180-ish CSV parser (handles quotes, commas, newlines).
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < csvText.length; i++) {
+    const ch = csvText[i];
+    const next = csvText[i + 1];
+
+    if (inQuotes) {
+      if (ch === '"' && next === '"') {
+        cell += '"';
+        i++;
+        continue;
+      }
+      if (ch === '"') {
+        inQuotes = false;
+        continue;
+      }
+      cell += ch;
+      continue;
+    }
+
+    if (ch === '"') {
+      inQuotes = true;
+      continue;
+    }
+    if (ch === ',') {
+      row.push(cell);
+      cell = '';
+      continue;
+    }
+    if (ch === '\r') continue;
+    if (ch === '\n') {
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = '';
+      continue;
+    }
+    cell += ch;
+  }
+  row.push(cell);
+  rows.push(row);
+
+  const header = (rows.shift() ?? []).map((h) => h.trim());
+  const objects = rows
+    .filter((r) => r.some((v) => (v ?? '').trim() !== ''))
+    .map((r) => {
+      const obj: Record<string, string> = {};
+      for (let c = 0; c < header.length; c++) {
+        const key = header[c];
+        if (!key) continue;
+        obj[key] = (r[c] ?? '').trim();
+      }
+      return obj;
+    });
+
+  return objects;
 }
 
-function pad2(n: number) {
-  return String(n).padStart(2, '0');
+function coerceEventType(value: string): EventType | null {
+  const v = value.trim().toLowerCase();
+  if (v === 'upcoming') return 'upcoming';
+  if (v === 'history') return 'history';
+  return null;
 }
 
-export default function HomeScreen() {
-  const targetMs = useMemo(() => {
-    // June 25 (Berlin time). On this date Berlin is CEST (+02:00).
-    return new Date('2026-06-25T00:00:00+02:00').getTime();
-  }, []);
+export default function App() {
+  const scrollY = new Animated.Value(0);
+  const [data, setData] = useState<SiteData>(() => loadSiteData());
+  const [isLoading, setIsLoading] = useState<boolean>(!!SHEETS_CSV_URL);
+  const [loadError, setLoadError] = useState<string>('');
+  const didFetchRef = useRef(false);
 
-  const [nowMs, setNowMs] = useState(() => Date.now());
+  useFocusEffect(
+    useCallback(() => {
+      setData(loadSiteData());
+    }, [])
+  );
 
   useEffect(() => {
-    const id = setInterval(() => setNowMs(Date.now()), 250);
-    return () => clearInterval(id);
+    if (!SHEETS_CSV_URL) {
+      setIsLoading(false);
+      return;
+    }
+    if (didFetchRef.current) return;
+    didFetchRef.current = true;
+
+    const run = async () => {
+      try {
+        setIsLoading(true);
+        setLoadError('');
+        const res = await fetch(SHEETS_CSV_URL, { method: 'GET' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const csv = await res.text();
+        const rows = csvToJSON(csv);
+
+        const base = loadSiteData();
+        const events = rows
+          .map((r, idx): Event | undefined => {
+            const type = coerceEventType(r.type ?? '');
+            if (!type) return undefined;
+            const date = (r.date ?? '').trim();
+            const title = (r.title ?? '').trim();
+            const location = (r.location ?? '').trim();
+            const link = (r.link ?? '').trim();
+            const id = `${type === 'upcoming' ? 'u' : 'h'}${idx + 1}`;
+            const isSoldOut = String(r.isSoldOut ?? '').trim().toLowerCase() === 'true';
+
+            return { id, date, title, location, link, isSoldOut, type };
+          })
+          .filter(Boolean) as Event[];
+
+        setData({ profile: base.profile, events });
+      } catch (e) {
+        setLoadError(e instanceof Error ? e.message : 'Failed to load');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    run();
   }, []);
 
-  const cd = useMemo(() => computeCountdown(targetMs, nowMs), [targetMs, nowMs]);
+  const { upcoming, history } = useMemo(() => sortEvents(data.events ?? []), [data.events]);
+  const profile = data.profile;
+
+  // 헤더 텍스트 애니메이션 (스크롤 시 서서히 사라짐)
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, height * 0.4],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingScreen}>
+        <Text style={styles.loadingBrand}>GUMGO</Text>
+        <Text style={styles.loadingSub}>LOADING DATA</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.screen}>
-      <View style={styles.top}>
-        <Text style={styles.countdownKicker}>D-DAY</Text>
-        <Text style={styles.countdownTitle}>
-          {cd.isPast ? 'HÖR Berlin — LIVE' : 'HÖR Berlin — 6.25까지 남은 시간'}
-        </Text>
-        <View style={styles.countdownRow}>
-          <View style={styles.pill}>
-            <Text style={styles.pillValue}>{cd.days}</Text>
-            <Text style={styles.pillLabel}>DAYS</Text>
-          </View>
-          <View style={styles.pill}>
-            <Text style={styles.pillValue}>{pad2(cd.hours)}</Text>
-            <Text style={styles.pillLabel}>HRS</Text>
-          </View>
-          <View style={styles.pill}>
-            <Text style={styles.pillValue}>{pad2(cd.minutes)}</Text>
-            <Text style={styles.pillLabel}>MIN</Text>
-          </View>
-          <View style={styles.pill}>
-            <Text style={styles.pillValue}>{pad2(cd.seconds)}</Text>
-            <Text style={styles.pillLabel}>SEC</Text>
-          </View>
+    <View style={styles.container}>
+      <Animated.ScrollView
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
+        snapToInterval={height} // 섹션별로 딱딱 걸리는 느낌 (스냅)
+        decelerationRate="fast"
+      >
+        {/* 1. HERO SECTION */}
+        <View style={styles.section}>
+          <ImageBackground
+            source={{
+              uri:
+                profile.heroImage?.trim() ||
+                'https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?q=80&w=2070&auto=format&fit=crop',
+            }} // fallback image
+            style={styles.heroImage}
+          >
+            <Animated.View style={[styles.heroOverlay, { opacity: headerOpacity }]}>
+              <Text style={styles.heroTitle}>{profile.name || 'GUMGO'}</Text>
+              <Text style={styles.heroSub}>{(profile.location || 'TECHNO').toUpperCase()}</Text>
+            </Animated.View>
+          </ImageBackground>
         </View>
-      </View>
 
-      <View style={styles.center}>
-        <Text style={styles.brand}>GUMGO</Text>
-        <Text style={styles.tagline}>DJ / Producer</Text>
-      </View>
+        {/* 2. UPCOMING SECTION */}
+        <View style={[styles.section, styles.contentSection]}>
+          <Text style={styles.sectionTitle}>UPCOMING</Text>
+          {!!loadError && <Text style={styles.loadError}>DATA LOAD FAILED • {loadError}</Text>}
+          {upcoming.length === 0 ? (
+            <Text style={styles.bioText}>No upcoming events.</Text>
+          ) : (
+            upcoming.map((ev) => (
+              <TouchableOpacity
+                key={ev.id}
+                style={styles.eventItem}
+                onPress={handlePress}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.eventDate}>{formatDateDisplay(ev.date)}</Text>
+                <Text style={styles.eventLocation}>{(ev.title || ev.location || '').toUpperCase()}</Text>
+                {!!ev.location && <Text style={styles.eventMeta}>{ev.location.toUpperCase()}</Text>}
+                <View style={styles.line} />
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
 
-      <View style={styles.menu}>
-        <Link href="/latest-mix" asChild>
-          <Pressable style={({ pressed }) => [styles.menuButton, pressed && styles.menuButtonPressed]}>
-            <Text style={styles.menuButtonText}>Latest Mix</Text>
-          </Pressable>
-        </Link>
-        <Link href="/tour-dates" asChild>
-          <Pressable style={({ pressed }) => [styles.menuButton, pressed && styles.menuButtonPressed]}>
-            <Text style={styles.menuButtonText}>Tour Dates</Text>
-          </Pressable>
-        </Link>
-        <Link href="/about" asChild>
-          <Pressable style={({ pressed }) => [styles.menuButton, pressed && styles.menuButtonPressed]}>
-            <Text style={styles.menuButtonText}>About</Text>
-          </Pressable>
-        </Link>
-      </View>
+        {/* 3. HISTORY SECTION */}
+        <View style={[styles.section, styles.contentSection]}>
+          <Text style={styles.sectionTitle}>HISTORY</Text>
+          {history.length === 0 ? (
+            <Text style={styles.bioText}>No history yet.</Text>
+          ) : (
+            history.slice(0, 6).map((ev) => (
+              <View key={ev.id} style={styles.historyRow}>
+                <Text style={styles.historyYear}>{ev.date.slice(0, 4)}</Text>
+                <Text style={styles.historyText}>
+                  {(ev.title || ev.location || '').toUpperCase()}
+                </Text>
+              </View>
+            ))
+          )}
+        </View>
+
+        {/* 4. BIO SECTION */}
+        <View style={[styles.section, styles.contentSection]}>
+          <Text style={styles.sectionTitle}>BIO</Text>
+          <Text style={styles.bioText}>
+            {profile.bio?.trim()
+              ? profile.bio
+              : `South Korea-born, Singapore-based DJ pushing the boundaries of Techno.
+From minimal house to high-energy 140+ BPM industrial sounds.`}
+          </Text>
+          <TouchableOpacity style={styles.contactButton} onPress={handlePress}>
+            <Text style={styles.contactText}>GET IN TOUCH</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.ScrollView>
     </View>
   );
 }
 
-const COLORS = {
-  bg: '#050505',
-  panel: '#0C0C0C',
-  text: '#FFFFFF',
-  muted: 'rgba(255,255,255,0.72)',
-  neon: '#39FF14',
-  border: 'rgba(57,255,20,0.35)',
-};
-
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
-    backgroundColor: COLORS.bg,
-    paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 24,
-    justifyContent: 'space-between',
+    backgroundColor: '#000',
   },
-  top: {
-    gap: 10,
-  },
-  countdownKicker: {
-    color: COLORS.neon,
-    fontSize: 12,
-    letterSpacing: 2.2,
-    textTransform: 'uppercase',
-  },
-  countdownTitle: {
-    color: COLORS.text,
-    fontSize: 16,
-    letterSpacing: 0.4,
-  },
-  countdownRow: {
-    flexDirection: 'row',
-    gap: 10,
-    flexWrap: 'wrap',
-  },
-  pill: {
-    backgroundColor: COLORS.panel,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    minWidth: 78,
-    alignItems: 'center',
-  },
-  pillValue: {
-    color: COLORS.neon,
-    fontSize: 22,
-    fontWeight: '700',
-    textShadowColor: 'rgba(57,255,20,0.55)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
-  pillLabel: {
-    marginTop: 2,
-    color: COLORS.muted,
-    fontSize: 11,
-    letterSpacing: 1.3,
-  },
-  center: {
+  loadingScreen: {
+    flex: 1,
+    backgroundColor: '#050505',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
+    paddingHorizontal: 24,
   },
-  brand: {
-    color: COLORS.text,
-    fontSize: 64,
-    fontWeight: '800',
-    letterSpacing: 2.5,
-    textShadowColor: 'rgba(255,255,255,0.12)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 18,
+  loadingBrand: {
+    color: '#FFFFFF',
+    fontSize: 54,
+    fontWeight: '900',
+    letterSpacing: 2.4,
   },
-  tagline: {
-    marginTop: 8,
-    color: COLORS.neon,
+  loadingSub: {
+    marginTop: 14,
+    color: 'rgba(255,255,255,0.72)',
+    fontSize: 12,
+    letterSpacing: 3,
+  },
+  section: {
+    height: height,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  contentSection: {
+    paddingHorizontal: 30,
+    backgroundColor: '#000',
+  },
+  heroImage: {
+    flex: 1,
+    resizeMode: 'cover',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  heroOverlay: {
+    alignItems: 'center',
+  },
+  heroTitle: {
+    fontSize: 80,
+    fontWeight: '900',
+    color: '#fff',
+    letterSpacing: -2,
+  },
+  heroSub: {
     fontSize: 14,
-    letterSpacing: 3.2,
-    textTransform: 'uppercase',
+    color: '#fff',
+    letterSpacing: 4,
+    marginTop: 10,
+    opacity: 0.8,
   },
-  menu: {
-    gap: 12,
+  sectionTitle: {
+    fontSize: 12,
+    color: '#555',
+    letterSpacing: 3,
+    marginBottom: 50,
   },
-  menuButton: {
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+  loadError: {
+    color: 'rgba(255,255,255,0.72)',
+    fontSize: 12,
+    letterSpacing: 1.6,
+    marginBottom: 18,
   },
-  menuButtonPressed: {
-    borderColor: COLORS.border,
-    backgroundColor: 'rgba(57,255,20,0.08)',
+  eventItem: {
+    marginBottom: 40,
   },
-  menuButtonText: {
-    color: COLORS.text,
+  eventDate: {
+    fontSize: 14,
+    color: '#888',
+    marginBottom: 5,
+  },
+  eventLocation: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  eventMeta: {
+    marginTop: 8,
+    fontSize: 13,
+    color: '#888',
+    letterSpacing: 1.5,
+  },
+  line: {
+    height: 1,
+    backgroundColor: '#222',
+    marginTop: 20,
+  },
+  historyRow: {
+    flexDirection: 'row',
+    marginBottom: 30,
+    alignItems: 'baseline',
+  },
+  historyYear: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    width: 80,
+  },
+  historyText: {
     fontSize: 16,
-    letterSpacing: 0.8,
+    color: '#888',
+  },
+  bioText: {
+    fontSize: 22,
+    color: '#fff',
+    lineHeight: 34,
+    fontWeight: '300',
+  },
+  contactButton: {
+    marginTop: 50,
+    borderWidth: 1,
+    borderColor: '#fff',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    alignSelf: 'flex-start',
+  },
+  contactText: {
+    color: '#fff',
+    fontSize: 14,
+    letterSpacing: 2,
   },
 });
