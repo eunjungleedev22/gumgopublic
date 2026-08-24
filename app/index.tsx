@@ -32,8 +32,8 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <Text style={styles.title}>먹은척 🍽️</Text>
-          <Text style={styles.subtitle}>배고픔에 지지 않고, 돈도 지키는 법</Text>
+          <Text style={styles.title}>통장통통 🐷</Text>
+          <Text style={styles.subtitle}>지갑은 두껍게, 뱃살은 얇게</Text>
         </View>
 
         <View style={styles.promptCard}>
