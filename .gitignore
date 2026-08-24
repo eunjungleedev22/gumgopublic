@@ -41,3 +41,6 @@ app-example
 # generated native folders
 /ios
 /android
+
+# store asset generation cache
+.store-assets-cache
