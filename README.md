@@ -1,50 +1,42 @@
-# Welcome to your Expo app 👋
+# 먹은척
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+배고파서 이성을 잃고 충동적으로 음식을 시켜먹는 걸 막기 위한 앱입니다.
+먹고 싶은 음식과 예상 가격을 기록하면, 화면 속에서 "이미 그 음식을 먹은 것처럼" 최면 연출을 보여주고,
+실제로는 먹지 않았으니 아낀 돈과 피한 칼로리·탄단지를 다이어트 앱처럼 기록해줍니다.
 
-## Get started
+## 사용 흐름
 
-1. Install dependencies
+1. 홈 화면에서 "오늘 뭐 먹고 싶어요?"에 음식 이름을 입력
+2. 양(인분)과 가격을 입력 → 예상 칼로리/탄단지 미리보기 확인
+3. "이미 먹었다고 믿어볼게요" 화면(최면 연출)에서 먹는 과정을 상상하며 지나감
+4. 결과 화면에서 아낀 돈 · 피한 칼로리 · 탄단지 확인, 누적 기록에 반영
+5. 전체 기록 화면에서 날짜별/주간 통계 확인
 
-   ```bash
-   npm install
-   ```
+칼로리·탄단지는 로컬 음식 DB(약 45종의 한국 배달/간식 음식)와 매칭되면 그 값을, 매칭되지 않으면
+카테고리 평균값 → 그래도 없으면 전체 평균값 순으로 **대략적으로 추정**합니다 (정밀한 영양 정보가 아닙니다).
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## 실행 방법
 
 ```bash
-npm run reset-project
+npm install
+npx expo start --web   # 웹에서 바로 확인
+# 또는
+npx expo start         # Expo Go로 iOS/Android에서 확인
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 토스 미니앱 연동 검토 결과
 
-## Learn more
+"아낀 돈을 토스 '모으기'에 자동으로 넣어줄 수 있는가"를 조사한 결과입니다.
 
-To learn more about developing your project with Expo, look at the following resources:
+- **Apps in Toss(토스 미니앱) 플랫폼은 실제로 존재**하며 로그인, 인앱결제, 인앱광고, 프로모션 등의 SDK를 제공합니다.
+- 하지만 공개된 SDK/문서 범위에는 **계좌이체나 저축을 트리거하는 API가 없습니다.**
+- 토스의 "모으기"는 토스뱅크 자체의 자동이체 저축 상품이라, 외부(미니)앱이 이를 프로그래밍적으로
+  조작할 수 있는 공개 API가 없습니다.
+- 오픈뱅킹(금융결제원) API로 계좌 간 자동이체는 가능하지만, 대상은 **사용자의 일반 은행 계좌**이지
+  토스 "모으기" 상품 자체가 아니며, 이용기관 등록에는 별도 자격(핀테크 업종 등록 등)과 보안심사가 필요해
+  개인 개발자가 접근하기엔 진입장벽이 높습니다.
+- `supertoss://` 딥링크로 토스 앱을 열어줄 수는 있지만, 이는 화면만 열어줄 뿐 **입금은 사용자가 직접 눌러야** 합니다.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+**결론: 현재 시점에서 "자동으로" 모으기에 적립하는 것은 기술적으로 불가능합니다.**
+그래서 이 앱은 절약 금액을 앱 안에서 기록만 하고, 홈 화면의 "토스 앱에서 모으기 확인하기" 버튼으로
+토스 앱을 열어 사용자가 직접 이체를 완료하는 반자동 방식을 채택했습니다.
