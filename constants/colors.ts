@@ -1,0 +1,15 @@
+export const COLORS = {
+  bg: "#FAFAF9",
+  card: "#FFFFFF",
+  primary: "#FF5A5F",
+  primaryDark: "#E14348",
+  text: "#1A1A1A",
+  subtext: "#6B7280",
+  border: "#EEEEEE",
+  success: "#16A34A",
+  successBg: "#EAFBF0",
+  carb: "#F6B93B",
+  protein: "#4A90E2",
+  fat: "#F0656B",
+  shadow: "#00000022",
+};

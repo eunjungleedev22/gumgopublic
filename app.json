@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Gwe",
-    "slug": "Gwe",
+    "name": "먹은척",
+    "slug": "meogeuncheok",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "gwe",
+    "scheme": "meogeuncheok",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -41,7 +41,6 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
       "reactCompiler": true
     }
   }
