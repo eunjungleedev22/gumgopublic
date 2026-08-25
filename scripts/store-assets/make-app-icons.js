@@ -9,8 +9,9 @@ const path = require("path");
 const fs = require("fs");
 const { ROOT, CACHE, launch } = require("./lib");
 
-const INK = "#0B0C0E";
-const LIME = "#C6F24E";
+const RED = "#A8352A";
+const BUTTER = "#FBE7BF";
+const CREAM = "#F7F4EC";
 
 const MARK = (fg) =>
   `<rect x="16" y="32" width="68" height="23" rx="11.5" fill="${fg}"/>` +
@@ -26,12 +27,12 @@ const page = (size, bg, fg, viewBox = "0 0 100 100") => `<!doctype html><html><h
 </body></html>`;
 
 const jobs = [
-  { file: "icon.png", size: 1024, bg: LIME, fg: INK },
-  { file: "splash-icon.png", size: 1024, bg: INK, fg: LIME },
-  { file: "favicon.png", size: 256, bg: LIME, fg: INK },
-  { file: "android-icon-background.png", size: 1024, bg: LIME, fg: null },
-  { file: "android-icon-foreground.png", size: 1024, bg: null, fg: INK, viewBox: "-25 -25 150 150", alpha: true },
-  { file: "android-icon-monochrome.png", size: 1024, bg: null, fg: INK, viewBox: "-25 -25 150 150", alpha: true },
+  { file: "icon.png", size: 1024, bg: BUTTER, fg: RED },
+  { file: "splash-icon.png", size: 1024, bg: CREAM, fg: RED },
+  { file: "favicon.png", size: 256, bg: BUTTER, fg: RED },
+  { file: "android-icon-background.png", size: 1024, bg: BUTTER, fg: null },
+  { file: "android-icon-foreground.png", size: 1024, bg: null, fg: RED, viewBox: "-25 -25 150 150", alpha: true },
+  { file: "android-icon-monochrome.png", size: 1024, bg: null, fg: RED, viewBox: "-25 -25 150 150", alpha: true },
 ];
 
 (async () => {

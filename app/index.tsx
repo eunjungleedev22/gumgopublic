@@ -1,16 +1,19 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { COLORS, RADIUS } from "@/constants/colors";
+import { COLORS, RADIUS, SHADOW } from "@/constants/colors";
 import { useCravings } from "@/context/CravingsContext";
 import { formatKcal, formatWon } from "@/lib/format";
+import { currentStreak } from "@/lib/streak";
 import { StatCard } from "@/components/StatCard";
+import { EntryRow } from "@/components/EntryRow";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { entries, allTimeTotals, todayTotals } = useCravings();
   const [foodName, setFoodName] = useState("");
+  const streak = useMemo(() => currentStreak(entries), [entries]);
 
   function startFlow() {
     const name = foodName.trim();
@@ -29,21 +32,14 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.wordmark}>통장통통</Text>
 
-        {/* The running total is the whole point of the app, so it leads. */}
+        {/* Entering the app means one thing: log the thing you want. So the input
+            owns the top of the screen and the running total is demoted below it. */}
         <View style={styles.hero}>
-          <Text style={styles.heroLabel}>지금까지 아낀 돈</Text>
-          <Text style={styles.heroValue}>{formatWon(allTimeTotals.moneySaved)}</Text>
-          <Text style={styles.heroSub}>
-            {allTimeTotals.count}번 참고 {formatKcal(allTimeTotals.calories)} 덜 먹었어요
-          </Text>
-        </View>
-
-        <View style={styles.promptCard}>
-          <Text style={styles.promptLabel}>오늘 뭐 먹고 싶어요?</Text>
+          <Text style={styles.heroTitle}>오늘 뭐 먹고 싶어요?</Text>
           <TextInput
             style={styles.input}
             placeholder="치킨, 떡볶이, 케이크…"
-            placeholderTextColor={COLORS.textFaint}
+            placeholderTextColor={COLORS.placeholder}
             value={foodName}
             onChangeText={setFoodName}
             onSubmitEditing={startFlow}
@@ -54,9 +50,18 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
+        <View style={styles.strip}>
+          <View style={styles.streakBadge}>
+            <Text style={styles.streakBadgeText}>{streak}일</Text>
+          </View>
+          <Text style={styles.stripLabel}>연속 참는 중</Text>
+          <Text style={styles.stripCaption}>누적</Text>
+          <Text style={styles.stripValue}>{formatWon(allTimeTotals.moneySaved)}</Text>
+        </View>
+
         <View style={styles.statsRow}>
-          <StatCard label="오늘 아낀 돈" value={formatWon(todayTotals.moneySaved)} filled />
-          <StatCard label="오늘 피한 칼로리" value={formatKcal(todayTotals.calories)} accentColor={COLORS.heat} />
+          <StatCard label="오늘 아낀 돈" value={formatWon(todayTotals.moneySaved)} accentColor={COLORS.accent} />
+          <StatCard label="오늘 피한 칼로리" value={formatKcal(todayTotals.calories)} accentColor={COLORS.kcal} />
         </View>
 
         <View style={styles.sectionHeaderRow}>
@@ -74,15 +79,15 @@ export default function HomeScreen() {
           </View>
         ) : (
           <View style={styles.list}>
-            {entries.slice(0, 4).map((e) => (
-              <View key={e.id} style={styles.entryRow}>
-                <Text style={styles.entryEmoji}>{e.emoji}</Text>
-                <View style={styles.entryInfo}>
-                  <Text style={styles.entryName}>{e.foodName}</Text>
-                  <Text style={styles.entrySub}>{formatKcal(e.calories)}</Text>
-                </View>
-                <Text style={styles.entryPrice}>{formatWon(e.price)}</Text>
-              </View>
+            {entries.slice(0, 3).map((e, i) => (
+              <EntryRow
+                key={e.id}
+                emoji={e.emoji}
+                name={e.foodName}
+                sub={formatKcal(e.calories)}
+                price={e.price}
+                divided={i > 0}
+              />
             ))}
           </View>
         )}
@@ -100,19 +105,24 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.bg },
-  container: { padding: 20, paddingTop: 8, paddingBottom: 40, gap: 12 },
+  container: { padding: 20, paddingTop: 12, paddingBottom: 40 },
 
-  wordmark: { fontSize: 15, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.3, marginBottom: 12 },
+  wordmark: { fontSize: 14.5, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.3, marginBottom: 13 },
 
-  hero: { paddingHorizontal: 2, paddingBottom: 18 },
-  heroLabel: { fontSize: 14, fontWeight: "600", color: COLORS.textDim, letterSpacing: -0.3 },
-  heroValue: { fontSize: 52, fontWeight: "800", color: COLORS.accent, letterSpacing: -2.6, marginTop: 6 },
-  heroSub: { fontSize: 14, color: COLORS.textDim, marginTop: 8, letterSpacing: -0.3 },
-
-  promptCard: { backgroundColor: COLORS.surface, borderRadius: RADIUS.lg, padding: 20, gap: 12 },
-  promptLabel: { fontSize: 19, fontWeight: "700", color: COLORS.text, letterSpacing: -0.6 },
+  hero: {
+    backgroundColor: COLORS.hero,
+    borderWidth: 1,
+    borderColor: COLORS.heroLine,
+    borderRadius: RADIUS.lg,
+    padding: 22,
+    gap: 13,
+    ...SHADOW.lift,
+  },
+  heroTitle: { fontSize: 23, fontWeight: "800", color: COLORS.text, letterSpacing: -0.9, lineHeight: 30 },
   input: {
-    backgroundColor: COLORS.surfaceAlt,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.heroLine,
     borderRadius: RADIUS.sm,
     paddingHorizontal: 16,
     paddingVertical: 15,
@@ -120,35 +130,60 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     letterSpacing: -0.3,
   },
-  cta: { backgroundColor: COLORS.accent, borderRadius: RADIUS.sm, paddingVertical: 16, alignItems: "center" },
-  ctaText: { color: COLORS.accentInk, fontSize: 16, fontWeight: "800", letterSpacing: -0.4 },
+  cta: {
+    backgroundColor: COLORS.accent,
+    borderRadius: RADIUS.sm,
+    paddingVertical: 18,
+    alignItems: "center",
+    ...SHADOW.button,
+  },
+  ctaText: { color: COLORS.accentInk, fontSize: 17, fontWeight: "800", letterSpacing: -0.4 },
 
-  statsRow: { flexDirection: "row", gap: 10 },
+  strip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    paddingHorizontal: 15,
+    paddingVertical: 13,
+    marginTop: 12,
+    ...SHADOW.soft,
+  },
+  streakBadge: { backgroundColor: COLORS.accentTint, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
+  streakBadgeText: { fontSize: 15, fontWeight: "800", color: COLORS.accent, letterSpacing: -0.4 },
+  stripLabel: { flex: 1, fontSize: 14, fontWeight: "700", color: COLORS.text, letterSpacing: -0.3 },
+  stripCaption: { fontSize: 12.5, color: COLORS.textFaint, fontWeight: "600" },
+  stripValue: { fontSize: 15, fontWeight: "800", color: COLORS.accent, letterSpacing: -0.4 },
+
+  statsRow: { flexDirection: "row", gap: 10, marginTop: 10 },
 
   sectionHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 16,
-    marginBottom: 2,
+    marginTop: 20,
+    marginBottom: 8,
   },
-  sectionTitle: { fontSize: 16, fontWeight: "700", color: COLORS.text, letterSpacing: -0.4 },
-  link: { fontSize: 14, color: COLORS.textDim, fontWeight: "600" },
+  sectionTitle: { fontSize: 15, fontWeight: "700", color: COLORS.text, letterSpacing: -0.4 },
+  link: { fontSize: 13.5, color: COLORS.textDim, fontWeight: "600" },
 
-  emptyCard: { backgroundColor: COLORS.surface, borderRadius: RADIUS.md, padding: 28, alignItems: "center" },
+  emptyCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.md,
+    padding: 28,
+    alignItems: "center",
+    ...SHADOW.soft,
+  },
   emptyText: { color: COLORS.textFaint, textAlign: "center", lineHeight: 22, fontSize: 14 },
 
-  list: { backgroundColor: COLORS.surface, borderRadius: RADIUS.md, paddingHorizontal: 16 },
-  entryRow: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 15 },
-  entryEmoji: { fontSize: 22 },
-  entryInfo: { flex: 1 },
-  entryName: { fontSize: 15, fontWeight: "700", color: COLORS.text, letterSpacing: -0.3 },
-  entrySub: { fontSize: 13, color: COLORS.textFaint, marginTop: 2 },
-  entryPrice: { fontSize: 15, fontWeight: "700", color: COLORS.accent, letterSpacing: -0.4 },
+  list: { backgroundColor: COLORS.surface, borderRadius: RADIUS.md, paddingHorizontal: 14, ...SHADOW.soft },
 
   tossButton: {
     marginTop: 20,
-    backgroundColor: COLORS.surfaceAlt,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceLine,
     borderRadius: RADIUS.sm,
     paddingVertical: 15,
     alignItems: "center",

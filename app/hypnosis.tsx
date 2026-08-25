@@ -15,6 +15,8 @@ const STEPS = [
   { text: "배가 부르고 만족스러워요", duration: 2200 },
 ];
 
+const RINGS = [430, 320, 215];
+
 function safeHaptic() {
   if (Platform.OS !== "web") {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
@@ -75,8 +77,17 @@ export default function HypnosisScreen() {
   }, [stepIndex]);
 
   return (
+    /* The only screen that changes ground colour and drops every card: the shift
+       from butter to peach is itself the signal that you are "eating" now. */
     <SafeAreaView style={styles.safe}>
       <View style={styles.center}>
+        <View style={styles.rings} pointerEvents="none">
+          {RINGS.map((size) => (
+            <View key={size} style={[styles.ring, { width: size, height: size, borderRadius: size / 2 }]} />
+          ))}
+          <View style={styles.disc} />
+        </View>
+
         <Animated.Text style={[styles.emoji, { transform: [{ scale }] }]}>{estimate.emoji}</Animated.Text>
         <Text style={styles.foodName}>{foodName}</Text>
         <Animated.Text style={[styles.stepText, { opacity: textOpacity }]}>
@@ -95,20 +106,26 @@ export default function HypnosisScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.bg },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 20, padding: 32 },
-  emoji: { fontSize: 128 },
-  foodName: { fontSize: 15, fontWeight: "700", color: COLORS.textFaint, letterSpacing: -0.3, marginTop: 8 },
+  safe: { flex: 1, backgroundColor: COLORS.trance },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 16, padding: 32 },
+
+  rings: { ...StyleSheet.absoluteFillObject, alignItems: "center", justifyContent: "center" },
+  ring: { position: "absolute", borderWidth: 1.5, borderColor: COLORS.tranceRing },
+  disc: { position: "absolute", width: 230, height: 230, borderRadius: 115, backgroundColor: COLORS.tranceDeep },
+
+  emoji: { fontSize: 122 },
+  foodName: { fontSize: 14.5, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.3, marginTop: 12 },
   stepText: {
-    fontSize: 26,
+    fontSize: 25,
     fontWeight: "800",
     color: COLORS.text,
     textAlign: "center",
     letterSpacing: -1,
-    lineHeight: 36,
-    minHeight: 36,
+    lineHeight: 34,
+    minHeight: 34,
   },
+
   progress: { flexDirection: "row", gap: 6, paddingHorizontal: 24, paddingBottom: 32 },
-  segment: { flex: 1, height: 3, borderRadius: 2, backgroundColor: COLORS.surfaceAlt },
+  segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: COLORS.tranceRing },
   segmentOn: { backgroundColor: COLORS.accent },
 });
