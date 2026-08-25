@@ -6,7 +6,7 @@ import { COLORS } from "@/constants/colors";
 export default function RootLayout() {
   return (
     <CravingsProvider>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <Stack
         screenOptions={{
           headerShown: false,
