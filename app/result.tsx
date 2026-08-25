@@ -1,10 +1,11 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { COLORS, RADIUS } from "@/constants/colors";
+import { COLORS, RADIUS, SHADOW } from "@/constants/colors";
 import { useCravings } from "@/context/CravingsContext";
 import { formatKcal, formatWon } from "@/lib/format";
+import { currentStreak } from "@/lib/streak";
 import { MacroBar } from "@/components/MacroBar";
 
 export default function ResultScreen() {
@@ -12,6 +13,7 @@ export default function ResultScreen() {
   const { entries, isLoading, allTimeTotals } = useCravings();
   const { id } = useLocalSearchParams<{ id: string }>();
   const entry = entries.find((e) => e.id === id);
+  const streak = useMemo(() => currentStreak(entries), [entries]);
 
   if (!entry) {
     return (
@@ -31,7 +33,9 @@ export default function ResultScreen() {
         {/* The saved amount is the reward, so it gets the whole top of the screen. */}
         <Text style={styles.amount}>{formatWon(entry.price)}</Text>
         <View style={styles.foodRow}>
-          <Text style={styles.foodEmoji}>{entry.emoji}</Text>
+          <View style={styles.foodChip}>
+            <Text style={styles.foodEmoji}>{entry.emoji}</Text>
+          </View>
           <Text style={styles.foodName}>{entry.foodName}</Text>
         </View>
 
@@ -43,11 +47,16 @@ export default function ResultScreen() {
           <MacroBar carbs={entry.carbs} protein={entry.protein} fat={entry.fat} />
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>지금까지 누적</Text>
-          <Row label="총 절약 금액" value={formatWon(allTimeTotals.moneySaved)} accent />
-          <Row label="총 회피 칼로리" value={formatKcal(allTimeTotals.calories)} />
-          <Row label="참아낸 횟수" value={`${allTimeTotals.count}회`} />
+        <View style={styles.panel}>
+          <View style={styles.panelHead}>
+            <View style={styles.streakBadge}>
+              <Text style={styles.streakBadgeText}>{streak}일째</Text>
+            </View>
+            <Text style={styles.panelTitle}>연속으로 참는 중</Text>
+          </View>
+          <Row label="총 절약 금액" value={formatWon(allTimeTotals.moneySaved)} />
+          <Row label="총 회피 칼로리" value={formatKcal(allTimeTotals.calories)} divided />
+          <Row label="참아낸 횟수" value={`${allTimeTotals.count}회`} divided />
         </View>
 
         <Pressable style={styles.primary} onPress={() => router.replace("/")}>
@@ -61,11 +70,11 @@ export default function ResultScreen() {
   );
 }
 
-function Row({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function Row({ label, value, divided }: { label: string; value: string; divided?: boolean }) {
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, divided && styles.rowDivided]}>
       <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={[styles.rowValue, accent && { color: COLORS.accent }]}>{value}</Text>
+      <Text style={styles.rowValue}>{value}</Text>
     </View>
   );
 }
@@ -74,25 +83,53 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.bg },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   loading: { color: COLORS.textDim },
-  container: { padding: 20, paddingTop: 24, paddingBottom: 40, gap: 12 },
+  container: { padding: 20, paddingTop: 24, paddingBottom: 40 },
 
   kicker: { fontSize: 15, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.3 },
-  amount: { fontSize: 60, fontWeight: "800", color: COLORS.accent, letterSpacing: -3, marginTop: 4 },
-  foodRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4, marginBottom: 18 },
-  foodEmoji: { fontSize: 20 },
-  foodName: { fontSize: 16, color: COLORS.textDim, fontWeight: "600", letterSpacing: -0.3 },
+  amount: { fontSize: 58, fontWeight: "800", color: COLORS.accent, letterSpacing: -2.9, marginTop: 4 },
+  foodRow: { flexDirection: "row", alignItems: "center", gap: 9, marginTop: 6, marginBottom: 20 },
+  foodChip: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    backgroundColor: COLORS.chip,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  foodEmoji: { fontSize: 16 },
+  foodName: { fontSize: 15, color: COLORS.textDim, fontWeight: "600", letterSpacing: -0.3 },
 
-  card: { backgroundColor: COLORS.surface, borderRadius: RADIUS.lg, padding: 20, gap: 14 },
-  cardTitle: { fontSize: 13, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.2 },
+  card: { backgroundColor: COLORS.surface, borderRadius: 24, padding: 20, gap: 14, ...SHADOW.soft },
   kcalRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
   kcalLabel: { fontSize: 14, color: COLORS.textDim, fontWeight: "600" },
-  kcalValue: { fontSize: 30, fontWeight: "800", color: COLORS.heat, letterSpacing: -1.4 },
+  kcalValue: { fontSize: 28, fontWeight: "800", color: COLORS.kcal, letterSpacing: -1.2 },
 
-  row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  rowLabel: { fontSize: 14, color: COLORS.textDim },
-  rowValue: { fontSize: 16, fontWeight: "700", color: COLORS.text, letterSpacing: -0.4 },
+  panel: {
+    backgroundColor: COLORS.hero,
+    borderWidth: 1,
+    borderColor: COLORS.heroLine,
+    borderRadius: 24,
+    padding: 20,
+    marginTop: 12,
+  },
+  panelHead: { flexDirection: "row", alignItems: "center", gap: 9, marginBottom: 14 },
+  streakBadge: { backgroundColor: COLORS.surface, borderRadius: 9, paddingHorizontal: 9, paddingVertical: 4 },
+  streakBadgeText: { fontSize: 13, fontWeight: "800", color: COLORS.accent, letterSpacing: -0.3 },
+  panelTitle: { fontSize: 14, fontWeight: "700", color: COLORS.text, letterSpacing: -0.3 },
 
-  primary: { backgroundColor: COLORS.accent, borderRadius: RADIUS.sm, paddingVertical: 17, alignItems: "center", marginTop: 8 },
+  row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 9 },
+  rowDivided: { borderTopWidth: 1, borderTopColor: COLORS.heroLine },
+  rowLabel: { fontSize: 13.5, color: COLORS.textDim, fontWeight: "600" },
+  rowValue: { fontSize: 15, fontWeight: "800", color: COLORS.text, letterSpacing: -0.3 },
+
+  primary: {
+    backgroundColor: COLORS.accent,
+    borderRadius: RADIUS.sm,
+    paddingVertical: 17,
+    alignItems: "center",
+    marginTop: 18,
+    ...SHADOW.button,
+  },
   primaryText: { color: COLORS.accentInk, fontSize: 16, fontWeight: "800", letterSpacing: -0.4 },
   secondary: { paddingVertical: 14, alignItems: "center" },
   secondaryText: { color: COLORS.textDim, fontSize: 14, fontWeight: "600" },

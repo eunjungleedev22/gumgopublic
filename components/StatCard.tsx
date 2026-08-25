@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { COLORS, RADIUS } from "@/constants/colors";
+import { COLORS, RADIUS, SHADOW } from "@/constants/colors";
 
 type Props = {
   label: string;
@@ -8,20 +8,15 @@ type Props = {
   /** Rendered smaller and dimmer, right after the value (e.g. a unit). */
   unit?: string;
   accentColor?: string;
-  /** Fills the block with the accent colour — use for the single most important stat. */
-  filled?: boolean;
 };
 
-export function StatCard({ label, value, unit, accentColor = COLORS.text, filled }: Props) {
-  const valueColor = filled ? COLORS.accentInk : accentColor;
-  const labelColor = filled ? "rgba(11,12,14,.62)" : COLORS.textDim;
-
+export function StatCard({ label, value, unit, accentColor = COLORS.text }: Props) {
   return (
-    <View style={[styles.card, filled && styles.cardFilled]}>
-      <Text style={[styles.label, { color: labelColor }]}>{label}</Text>
+    <View style={styles.card}>
+      <Text style={styles.label}>{label}</Text>
       <View style={styles.valueRow}>
-        <Text style={[styles.value, { color: valueColor }]}>{value}</Text>
-        {unit ? <Text style={[styles.unit, { color: valueColor }]}>{unit}</Text> : null}
+        <Text style={[styles.value, { color: accentColor }]}>{value}</Text>
+        {unit ? <Text style={[styles.unit, { color: accentColor }]}>{unit}</Text> : null}
       </View>
     </View>
   );
@@ -32,13 +27,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.md,
-    paddingHorizontal: 18,
-    paddingTop: 18,
-    paddingBottom: 20,
+    paddingHorizontal: 16,
+    paddingTop: 15,
+    paddingBottom: 17,
+    ...SHADOW.soft,
   },
-  cardFilled: { backgroundColor: COLORS.accent },
-  label: { fontSize: 13, fontWeight: "600", letterSpacing: -0.2 },
-  valueRow: { flexDirection: "row", alignItems: "baseline", marginTop: 10 },
-  value: { fontSize: 28, fontWeight: "800", letterSpacing: -1.2 },
-  unit: { fontSize: 15, fontWeight: "700", marginLeft: 2, letterSpacing: -0.3 },
+  label: { fontSize: 12.5, fontWeight: "600", color: COLORS.textDim, letterSpacing: -0.2 },
+  valueRow: { flexDirection: "row", alignItems: "baseline", marginTop: 7 },
+  value: { fontSize: 21, fontWeight: "800", letterSpacing: -0.8 },
+  unit: { fontSize: 14, fontWeight: "700", marginLeft: 2, letterSpacing: -0.3 },
 });

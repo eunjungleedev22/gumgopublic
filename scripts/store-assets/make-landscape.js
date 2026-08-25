@@ -1,6 +1,6 @@
 // Landscape store screenshot, 1504x741. Same editorial language as the portrait
-// set: ink ground, tight oversized headline, and the three screens that carry the
-// story — dashboard, the mechanic, the payoff.
+// set: warm light ground, tight oversized headline, and the three screens that
+// carry the story — dashboard, the mechanic, the payoff.
 const path = require("path");
 const { OUT, SCREENS, CACHE, launch, renderHtml, b64 } = require("./lib");
 
@@ -8,9 +8,10 @@ const W = 1504;
 const H = 741;
 const PHONE_W = 254;
 
-const INK = "#0B0C0E";
-const GROUND = "#191C21";
-const LIME = "#C6F24E";
+const APP_BG = "#F7F4EC";
+const GROUND = "#F0EADA";
+const RED = "#A8352A";
+const INK = "#2A2622";
 
 const shot = (n) => b64(path.join(SCREENS, `${n}.png`));
 
@@ -28,17 +29,17 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   .left{position:absolute;left:88px;top:150px;width:560px}
   .brand{display:flex;align-items:center;gap:16px;margin-bottom:38px}
   .brand img{width:64px;height:64px;border-radius:16px}
-  .brand span{color:#F2F3F5;font-size:26px;font-weight:800;letter-spacing:-.8px}
-  h1{color:#F2F3F5;font-size:64px;font-weight:900;line-height:1.22;letter-spacing:-2.6px}
-  h1 em{font-style:normal;color:${LIME}}
-  p{color:#8A9099;font-size:22px;font-weight:600;line-height:1.55;margin-top:28px;letter-spacing:-.5px}
+  .brand span{color:#2A2622;font-size:26px;font-weight:800;letter-spacing:-.8px}
+  h1{color:#2A2622;font-size:64px;font-weight:900;line-height:1.22;letter-spacing:-2.6px}
+  h1 em{font-style:normal;color:${RED}}
+  p{color:#6F695E;font-size:22px;font-weight:600;line-height:1.55;margin-top:28px;letter-spacing:-.5px}
   .phone{position:absolute;width:${PHONE_W}px;border-radius:24px;line-height:0;
-         overflow:hidden;background:${INK};box-shadow:inset 0 0 0 1px rgba(255,255,255,.10)}
+         overflow:hidden;background:${APP_BG};box-shadow:inset 0 0 0 1px rgba(31,27,24,.12)}
   .phone img{width:${PHONE_W}px;display:block}
 </style></head><body>
   <div class="left">
     <div class="brand">
-      <img src="data:image/png;base64,${b64(path.join(CACHE, "logo-dark.png"))}"><span>통장통통</span>
+      <img src="data:image/png;base64,${b64(path.join(CACHE, "logo-light.png"))}"><span>통장통통</span>
     </div>
     <h1>지갑은 <em>두껍게</em>,<br>뱃살은 얇게</h1>
     <p>먹고 싶은 음식을 기록하면 먹은 셈 치고,<br>아낀 돈과 피한 칼로리를 대신 계산해 드려요.</p>

@@ -67,7 +67,7 @@ const seed = [
     await ctx.close();
   }
 
-  await shot("home", "/", "text=지금까지 아낀 돈");
+  await shot("home", "/", "text=오늘 뭐 먹고 싶어요?");
 
   await shot("log", "/log", "text=참을 음식", async (page) => {
     // two text inputs on this screen: food name, then price

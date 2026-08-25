@@ -7,9 +7,9 @@ const path = require("path");
 const { OUT, CACHE, launch, renderHtml } = require("./lib");
 
 const VARIANTS = {
-  // Accent ground reads loud in the mini-app grid; ink ground suits dark chrome.
-  light: { bg: "#C6F24E", fg: "#0B0C0E" },
-  dark: { bg: "#0B0C0E", fg: "#C6F24E" },
+  // Butter ground matches the app's own hero; ink ground suits dark chrome.
+  light: { bg: "#FBE7BF", fg: "#A8352A" },
+  dark: { bg: "#2A2622", fg: "#FBE7BF" },
 };
 
 const html = (v) => `<!doctype html><html><head><meta charset="utf-8"><style>
