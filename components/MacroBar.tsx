@@ -10,31 +10,29 @@ type Props = {
 
 export function MacroBar({ carbs, protein, fat }: Props) {
   const total = Math.max(carbs + protein + fat, 1);
-  const carbPct = (carbs / total) * 100;
-  const proteinPct = (protein / total) * 100;
-  const fatPct = (fat / total) * 100;
 
   return (
     <View>
       <View style={styles.bar}>
-        <View style={[styles.segment, { width: `${carbPct}%`, backgroundColor: COLORS.carb }]} />
-        <View style={[styles.segment, { width: `${proteinPct}%`, backgroundColor: COLORS.protein }]} />
-        <View style={[styles.segment, { width: `${fatPct}%`, backgroundColor: COLORS.fat }]} />
+        <View style={[styles.segment, { flex: carbs / total, backgroundColor: COLORS.carb }]} />
+        <View style={[styles.segment, { flex: protein / total, backgroundColor: COLORS.protein }]} />
+        <View style={[styles.segment, { flex: fat / total, backgroundColor: COLORS.fat }]} />
       </View>
       <View style={styles.legendRow}>
-        <LegendItem color={COLORS.carb} label={`탄수화물 ${carbs}g`} />
-        <LegendItem color={COLORS.protein} label={`단백질 ${protein}g`} />
-        <LegendItem color={COLORS.fat} label={`지방 ${fat}g`} />
+        <LegendItem color={COLORS.carb} label="탄수" value={carbs} />
+        <LegendItem color={COLORS.protein} label="단백" value={protein} />
+        <LegendItem color={COLORS.fat} label="지방" value={fat} />
       </View>
     </View>
   );
 }
 
-function LegendItem({ color, label }: { color: string; label: string }) {
+function LegendItem({ color, label, value }: { color: string; label: string; value: number }) {
   return (
     <View style={styles.legendItem}>
       <View style={[styles.dot, { backgroundColor: color }]} />
-      <Text style={styles.legendText}>{label}</Text>
+      <Text style={styles.legendLabel}>{label}</Text>
+      <Text style={styles.legendValue}>{value}g</Text>
     </View>
   );
 }
@@ -42,32 +40,16 @@ function LegendItem({ color, label }: { color: string; label: string }) {
 const styles = StyleSheet.create({
   bar: {
     flexDirection: "row",
-    height: 10,
-    borderRadius: 6,
+    height: 6,
+    borderRadius: 3,
     overflow: "hidden",
-    backgroundColor: COLORS.border,
+    backgroundColor: COLORS.surfaceAlt,
+    gap: 3,
   },
-  segment: {
-    height: "100%",
-  },
-  legendRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-    marginTop: 10,
-  },
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  legendText: {
-    fontSize: 12,
-    color: COLORS.subtext,
-  },
+  segment: { height: "100%", borderRadius: 3 },
+  legendRow: { flexDirection: "row", gap: 18, marginTop: 14 },
+  legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+  dot: { width: 6, height: 6, borderRadius: 3 },
+  legendLabel: { fontSize: 13, color: COLORS.textDim, fontWeight: "600" },
+  legendValue: { fontSize: 13, color: COLORS.text, fontWeight: "700", letterSpacing: -0.2 },
 });

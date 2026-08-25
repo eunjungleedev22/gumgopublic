@@ -13,18 +13,29 @@ const DAY = 24 * 60 * 60 * 1000;
 const HOUR = 60 * 60 * 1000;
 const now = Date.now();
 
+// Anchor to calendar days rather than "N hours ago" — a plain hours-ago offset
+// slides into the previous day when the capture runs just after midnight, which
+// silently zeroes out the "오늘" stats on the home screen.
+const startOfToday = new Date();
+startOfToday.setHours(0, 0, 0, 0);
+const T0 = startOfToday.getTime();
+
+// `daysAgo: 0` is clamped into today even when it is barely past midnight.
+const at = (daysAgo, hour) =>
+  daysAgo === 0 ? Math.min(T0 + hour * HOUR, now - 60 * 1000) : T0 - daysAgo * DAY + hour * HOUR;
+
 const seed = [
-  { foodName: "후라이드치킨", servings: 1,   price: 22000, calories: 800, carbs: 40,  protein: 60, fat: 45, emoji: "🍗",  ago: 3 * HOUR },
-  { foodName: "버블티",       servings: 1,   price: 5500,  calories: 350, carbs: 70,  protein: 3,  fat: 5,  emoji: "🧋",  ago: 6 * HOUR },
-  { foodName: "떡볶이",       servings: 1.5, price: 12000, calories: 720, carbs: 135, protein: 14, fat: 12, emoji: "🌶️", ago: DAY + 2 * HOUR },
-  { foodName: "마라탕",       servings: 1,   price: 14000, calories: 700, carbs: 50,  protein: 30, fat: 40, emoji: "🌶️", ago: DAY + 8 * HOUR },
-  { foodName: "피자",         servings: 2,   price: 18000, calories: 570, carbs: 72,  protein: 24, fat: 20, emoji: "🍕",  ago: 2 * DAY + 4 * HOUR },
-  { foodName: "아이스크림",   servings: 1,   price: 4500,  calories: 250, carbs: 30,  protein: 4,  fat: 12, emoji: "🍦",  ago: 2 * DAY + 9 * HOUR },
-  { foodName: "족발",         servings: 1,   price: 32000, calories: 800, carbs: 10,  protein: 60, fat: 55, emoji: "🍖",  ago: 4 * DAY + 5 * HOUR },
-  { foodName: "곱창",         servings: 1,   price: 25000, calories: 600, carbs: 5,   protein: 30, fat: 50, emoji: "🍢",  ago: 5 * DAY + 7 * HOUR },
+  { foodName: "후라이드치킨", servings: 1,   price: 22000, calories: 800, carbs: 40,  protein: 60, fat: 45, emoji: "🍗",  daysAgo: 0, hour: 20 },
+  { foodName: "버블티",       servings: 1,   price: 5500,  calories: 350, carbs: 70,  protein: 3,  fat: 5,  emoji: "🧋",  daysAgo: 0, hour: 15 },
+  { foodName: "떡볶이",       servings: 1.5, price: 12000, calories: 720, carbs: 135, protein: 14, fat: 12, emoji: "🌶️", daysAgo: 1, hour: 21 },
+  { foodName: "마라탕",       servings: 1,   price: 14000, calories: 700, carbs: 50,  protein: 30, fat: 40, emoji: "🌶️", daysAgo: 1, hour: 13 },
+  { foodName: "피자",         servings: 2,   price: 18000, calories: 570, carbs: 72,  protein: 24, fat: 20, emoji: "🍕",  daysAgo: 2, hour: 19 },
+  { foodName: "아이스크림",   servings: 1,   price: 4500,  calories: 250, carbs: 30,  protein: 4,  fat: 12, emoji: "🍦",  daysAgo: 2, hour: 14 },
+  { foodName: "족발",         servings: 1,   price: 32000, calories: 800, carbs: 10,  protein: 60, fat: 55, emoji: "🍖",  daysAgo: 4, hour: 20 },
+  { foodName: "곱창",         servings: 1,   price: 25000, calories: 600, carbs: 5,   protein: 30, fat: 50, emoji: "🍢",  daysAgo: 5, hour: 22 },
 ]
-  .map(({ ago, ...e }, i) => {
-    const createdAt = now - ago;
+  .map(({ daysAgo, hour, ...e }, i) => {
+    const createdAt = at(daysAgo, hour);
     return { ...e, matchQuality: "exact", matchedName: e.foodName, id: `seed-${i}-${createdAt}`, createdAt };
   })
   .sort((a, b) => b.createdAt - a.createdAt); // newest first, same as the app
@@ -56,11 +67,14 @@ const seed = [
     await ctx.close();
   }
 
-  await shot("home", "/", "text=누적 절약 금액");
+  await shot("home", "/", "text=지금까지 아낀 돈");
 
-  await shot("log", "/log", "text=참을 음식을 기록해요", async (page) => {
-    await page.fill('input[placeholder*="후라이드치킨"]', "후라이드치킨");
-    await page.fill('input[placeholder*="18000"]', "22000");
+  await shot("log", "/log", "text=참을 음식", async (page) => {
+    // two text inputs on this screen: food name, then price
+    await page.locator("input").nth(0).fill("후라이드치킨");
+    await page.locator("input").nth(1).fill("22000");
+    // drop focus so the browser's focus ring doesn't sit over the field in the shot
+    await page.evaluate(() => (document.activeElement instanceof HTMLElement ? document.activeElement.blur() : null));
     await page.waitForTimeout(400);
   });
 
