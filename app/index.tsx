@@ -11,7 +11,7 @@ import { EntryRow } from "@/components/EntryRow";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { entries, allTimeTotals, todayTotals } = useCravings();
+  const { entries, allTimeTotals, todayTotals, identity } = useCravings();
   const [foodName, setFoodName] = useState("");
   const streak = useMemo(() => currentStreak(entries), [entries]);
 
@@ -30,7 +30,16 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.wordmark}>통장통통</Text>
+        <View style={styles.brandRow}>
+          <Text style={styles.wordmark}>통장통통</Text>
+          {identity && (
+            <View style={[styles.idChip, identity.source === "toss" && styles.idChipToss]}>
+              <Text style={[styles.idChipText, identity.source === "toss" && styles.idChipTextToss]}>
+                {identity.source === "toss" ? "토스 계정 연결됨" : "이 기기에만 저장"}
+              </Text>
+            </View>
+          )}
+        </View>
 
         {/* Entering the app means one thing: log the thing you want. So the input
             owns the top of the screen and the running total is demoted below it. */}
@@ -107,7 +116,19 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.bg },
   container: { padding: 20, paddingTop: 12, paddingBottom: 40 },
 
-  wordmark: { fontSize: 14.5, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.3, marginBottom: 13 },
+  brandRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 13 },
+  wordmark: { fontSize: 14.5, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.3 },
+  idChip: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceLine,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  idChipToss: { backgroundColor: COLORS.accentTint, borderColor: COLORS.accentTint },
+  idChipText: { fontSize: 11.5, fontWeight: "700", color: COLORS.textFaint, letterSpacing: -0.2 },
+  idChipTextToss: { color: COLORS.accent },
 
   hero: {
     backgroundColor: COLORS.hero,
