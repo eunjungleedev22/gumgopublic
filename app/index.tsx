@@ -1,11 +1,12 @@
 import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS, RADIUS, SHADOW } from "@/constants/colors";
 import { useCravings } from "@/context/CravingsContext";
 import { formatKcal, formatWon } from "@/lib/format";
 import { currentStreak } from "@/lib/streak";
+import { checkLink, linkAccount, LinkState } from "@/lib/tossLink";
 import { StatCard } from "@/components/StatCard";
 import { EntryRow } from "@/components/EntryRow";
 
@@ -13,7 +14,32 @@ export default function HomeScreen() {
   const router = useRouter();
   const { entries, allTimeTotals, todayTotals, identity } = useCravings();
   const [foodName, setFoodName] = useState("");
+  const [link, setLink] = useState<LinkState>({ status: "unavailable" });
+  const [isLinking, setIsLinking] = useState(false);
   const streak = useMemo(() => currentStreak(entries), [entries]);
+
+  // Asks the server whether this identity is linked. A backend that is absent or
+  // unconfigured simply reports "unavailable", so the app is unchanged without one.
+  useEffect(() => {
+    if (!identity) return;
+    let cancelled = false;
+    checkLink(identity.id).then((state) => {
+      if (!cancelled) setLink(state);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [identity]);
+
+  async function connect() {
+    if (!identity || isLinking) return;
+    setIsLinking(true);
+    try {
+      setLink(await linkAccount(identity.id));
+    } finally {
+      setIsLinking(false);
+    }
+  }
 
   function startFlow() {
     const name = foodName.trim();
@@ -32,13 +58,23 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <View style={styles.brandRow}>
           <Text style={styles.wordmark}>통장통통</Text>
-          {identity && (
-            <View style={[styles.idChip, identity.source === "toss" && styles.idChipToss]}>
-              <Text style={[styles.idChipText, identity.source === "toss" && styles.idChipTextToss]}>
-                {identity.source === "toss" ? "토스 계정 연결됨" : "이 기기에만 저장"}
+          {identity && link.status === "unlinked" ? (
+            <Pressable style={styles.idChip} onPress={connect} disabled={isLinking} hitSlop={6}>
+              <Text style={styles.idChipText}>{isLinking ? "연결 중…" : "토스 계정 연결"}</Text>
+            </Pressable>
+          ) : identity ? (
+            <View style={[styles.idChip, link.status === "linked" && styles.idChipToss]}>
+              <Text style={[styles.idChipText, link.status === "linked" && styles.idChipTextToss]}>
+                {link.status === "linked"
+                  ? link.mode === "dummy"
+                    ? "테스트 연결됨"
+                    : "토스 계정 연결됨"
+                  : identity.source === "toss"
+                  ? "토스 앱에서 실행 중"
+                  : "이 기기에만 저장"}
               </Text>
             </View>
-          )}
+          ) : null}
         </View>
 
         {/* Entering the app means one thing: log the thing you want. So the input

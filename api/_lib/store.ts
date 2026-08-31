@@ -13,8 +13,24 @@ const token = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TO
 
 export const isStoreConfigured = Boolean(url && token);
 
+/**
+ * Dummy mode gets an in-process map so the flow can be tried without
+ * provisioning KV. Serverless instances are not shared, so this survives only
+ * within one instance — fine for a walkthrough, useless for anything real.
+ */
+const dummyMemory = process.env.TOSS_LOGIN_MODE === "dummy" ? new Map<string, string>() : null;
+
 async function command(args: (string | number)[]): Promise<unknown> {
   if (!url || !token) {
+    if (dummyMemory) {
+      const [cmd, key, value] = args as string[];
+      if (cmd === "GET") return dummyMemory.get(key) ?? null;
+      if (cmd === "SET") {
+        dummyMemory.set(key, value);
+        return "OK";
+      }
+      return null;
+    }
     throw new HttpError(503, "저장소가 설정되지 않았어요");
   }
 

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { HttpError } from "./http";
 
 /**
@@ -41,13 +42,32 @@ export function readConfig(): TossLoginConfig | null {
 export const isLoginConfigured = readConfig() !== null;
 
 /**
+ * Stand-in for the real exchange so the rest of the flow can be exercised before
+ * the Toss contract is available. It is opt-in through `TOSS_LOGIN_MODE=dummy`,
+ * every response that used it is tagged `mode: "dummy"`, and the client badges
+ * itself accordingly — a dummy session must never be mistakable for a real one.
+ */
+export const isDummyMode = process.env.TOSS_LOGIN_MODE === "dummy";
+
+/** Deterministic, so the same code always resolves to the same fake user. */
+function dummyUserKey(authorizationCode: string, referrer?: string): string {
+  const digest = createHash("sha256").update(`${authorizationCode}:${referrer ?? ""}`).digest("hex");
+  return `dummy_${digest.slice(0, 24)}`;
+}
+
+/**
  * Returns the Toss `userKey` for an authorization code.
  *
  * NOTE: the two fetch calls below are not written yet. Filling them in needs the
  * exact endpoint contract; everything around this function — routing, validation,
  * storage, error handling — is complete and tested.
  */
-export async function resolveUserKey(_authorizationCode: string, _referrer?: string): Promise<string> {
+export async function resolveUserKey(authorizationCode: string, referrer?: string): Promise<string> {
+  if (isDummyMode) {
+    console.warn("TOSS_LOGIN_MODE=dummy — 실제 토스 인증 없이 가짜 userKey 를 발급합니다");
+    return dummyUserKey(authorizationCode, referrer);
+  }
+
   const config = readConfig();
   if (!config) {
     throw new HttpError(503, "토스 로그인이 아직 설정되지 않았어요");
