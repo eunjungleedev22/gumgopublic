@@ -85,8 +85,8 @@ const styles = StyleSheet.create({
   loading: { color: COLORS.textDim },
   container: { padding: 20, paddingTop: 24, paddingBottom: 40 },
 
-  kicker: { fontSize: 15, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.3 },
-  amount: { fontSize: 58, fontWeight: "800", color: COLORS.accent, letterSpacing: -2.9, marginTop: 4 },
+  kicker: { fontSize: 15, fontWeight: "600", color: COLORS.textDim, letterSpacing: -0.3 },
+  amount: { fontSize: 58, fontWeight: "700", color: COLORS.accent, letterSpacing: -2.9, marginTop: 4 },
   foodRow: { flexDirection: "row", alignItems: "center", gap: 9, marginTop: 6, marginBottom: 20 },
   foodChip: {
     width: 30,
@@ -97,12 +97,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   foodEmoji: { fontSize: 16 },
-  foodName: { fontSize: 15, color: COLORS.textDim, fontWeight: "600", letterSpacing: -0.3 },
+  foodName: { fontSize: 15, color: COLORS.textDim, fontWeight: "500", letterSpacing: -0.3 },
 
   card: { backgroundColor: COLORS.surface, borderRadius: 24, padding: 20, gap: 14, ...SHADOW.soft },
   kcalRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
-  kcalLabel: { fontSize: 14, color: COLORS.textDim, fontWeight: "600" },
-  kcalValue: { fontSize: 28, fontWeight: "800", color: COLORS.kcal, letterSpacing: -1.2 },
+  kcalLabel: { fontSize: 14, color: COLORS.textDim, fontWeight: "500" },
+  kcalValue: { fontSize: 28, fontWeight: "700", color: COLORS.kcal, letterSpacing: -1.2 },
 
   panel: {
     backgroundColor: COLORS.hero,
@@ -114,13 +114,13 @@ const styles = StyleSheet.create({
   },
   panelHead: { flexDirection: "row", alignItems: "center", gap: 9, marginBottom: 14 },
   streakBadge: { backgroundColor: COLORS.surface, borderRadius: 9, paddingHorizontal: 9, paddingVertical: 4 },
-  streakBadgeText: { fontSize: 13, fontWeight: "800", color: COLORS.accent, letterSpacing: -0.3 },
-  panelTitle: { fontSize: 14, fontWeight: "700", color: COLORS.text, letterSpacing: -0.3 },
+  streakBadgeText: { fontSize: 13, fontWeight: "700", color: COLORS.accent, letterSpacing: -0.3 },
+  panelTitle: { fontSize: 14, fontWeight: "600", color: COLORS.text, letterSpacing: -0.3 },
 
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 9 },
   rowDivided: { borderTopWidth: 1, borderTopColor: COLORS.heroLine },
-  rowLabel: { fontSize: 13.5, color: COLORS.textDim, fontWeight: "600" },
-  rowValue: { fontSize: 15, fontWeight: "800", color: COLORS.text, letterSpacing: -0.3 },
+  rowLabel: { fontSize: 13.5, color: COLORS.textDim, fontWeight: "500" },
+  rowValue: { fontSize: 15, fontWeight: "700", color: COLORS.text, letterSpacing: -0.3 },
 
   primary: {
     backgroundColor: COLORS.accent,
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     marginTop: 18,
     ...SHADOW.button,
   },
-  primaryText: { color: COLORS.accentInk, fontSize: 16, fontWeight: "800", letterSpacing: -0.4 },
+  primaryText: { color: COLORS.accentInk, fontSize: 16, fontWeight: "700", letterSpacing: -0.4 },
   secondary: { paddingVertical: 14, alignItems: "center" },
-  secondaryText: { color: COLORS.textDim, fontSize: 14, fontWeight: "600" },
+  secondaryText: { color: COLORS.textDim, fontSize: 14, fontWeight: "500" },
 });

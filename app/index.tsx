@@ -1,19 +1,45 @@
 import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS, RADIUS, SHADOW } from "@/constants/colors";
 import { useCravings } from "@/context/CravingsContext";
 import { formatKcal, formatWon } from "@/lib/format";
 import { currentStreak } from "@/lib/streak";
+import { checkLink, linkAccount, LinkState } from "@/lib/tossLink";
 import { StatCard } from "@/components/StatCard";
 import { EntryRow } from "@/components/EntryRow";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { entries, allTimeTotals, todayTotals } = useCravings();
+  const { entries, allTimeTotals, todayTotals, identity } = useCravings();
   const [foodName, setFoodName] = useState("");
+  const [link, setLink] = useState<LinkState>({ status: "unavailable" });
+  const [isLinking, setIsLinking] = useState(false);
   const streak = useMemo(() => currentStreak(entries), [entries]);
+
+  // Asks the server whether this identity is linked. A backend that is absent or
+  // unconfigured simply reports "unavailable", so the app is unchanged without one.
+  useEffect(() => {
+    if (!identity) return;
+    let cancelled = false;
+    checkLink(identity.id).then((state) => {
+      if (!cancelled) setLink(state);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [identity]);
+
+  async function connect() {
+    if (!identity || isLinking) return;
+    setIsLinking(true);
+    try {
+      setLink(await linkAccount(identity.id));
+    } finally {
+      setIsLinking(false);
+    }
+  }
 
   function startFlow() {
     const name = foodName.trim();
@@ -30,7 +56,26 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.wordmark}>통장통통</Text>
+        <View style={styles.brandRow}>
+          <Text style={styles.wordmark}>통장통통</Text>
+          {identity && link.status === "unlinked" ? (
+            <Pressable style={styles.idChip} onPress={connect} disabled={isLinking} hitSlop={6}>
+              <Text style={styles.idChipText}>{isLinking ? "연결 중…" : "토스 계정 연결"}</Text>
+            </Pressable>
+          ) : identity ? (
+            <View style={[styles.idChip, link.status === "linked" && styles.idChipToss]}>
+              <Text style={[styles.idChipText, link.status === "linked" && styles.idChipTextToss]}>
+                {link.status === "linked"
+                  ? link.mode === "dummy"
+                    ? "테스트 연결됨"
+                    : "토스 계정 연결됨"
+                  : identity.source === "toss"
+                  ? "토스 앱에서 실행 중"
+                  : "이 기기에만 저장"}
+              </Text>
+            </View>
+          ) : null}
+        </View>
 
         {/* Entering the app means one thing: log the thing you want. So the input
             owns the top of the screen and the running total is demoted below it. */}
@@ -96,7 +141,7 @@ export default function HomeScreen() {
           <Text style={styles.tossButtonText}>토스에서 모으기 →</Text>
         </Pressable>
         <Text style={styles.tossHint}>
-          자동 적립은 아직 지원되지 않아요. 토스 앱이 열리면 직접 이체하면 돼요.
+          자동 적립은 아직 지원되지 않아요.{"\n"}토스 앱이 열리면 직접 이체해 주세요.
         </Text>
       </ScrollView>
     </SafeAreaView>
@@ -107,7 +152,19 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.bg },
   container: { padding: 20, paddingTop: 12, paddingBottom: 40 },
 
-  wordmark: { fontSize: 14.5, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.3, marginBottom: 13 },
+  brandRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 13 },
+  wordmark: { fontSize: 14.5, fontWeight: "600", color: COLORS.textDim, letterSpacing: -0.3 },
+  idChip: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceLine,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  idChipToss: { backgroundColor: COLORS.accentTint, borderColor: COLORS.accentTint },
+  idChipText: { fontSize: 11.5, fontWeight: "600", color: COLORS.textFaint, letterSpacing: -0.2 },
+  idChipTextToss: { color: COLORS.accent },
 
   hero: {
     backgroundColor: COLORS.hero,
@@ -118,7 +175,7 @@ const styles = StyleSheet.create({
     gap: 13,
     ...SHADOW.lift,
   },
-  heroTitle: { fontSize: 23, fontWeight: "800", color: COLORS.text, letterSpacing: -0.9, lineHeight: 30 },
+  heroTitle: { fontSize: 23, fontWeight: "700", color: COLORS.text, letterSpacing: -0.9, lineHeight: 30 },
   input: {
     backgroundColor: COLORS.surface,
     borderWidth: 1,
@@ -137,7 +194,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     ...SHADOW.button,
   },
-  ctaText: { color: COLORS.accentInk, fontSize: 17, fontWeight: "800", letterSpacing: -0.4 },
+  ctaText: { color: COLORS.accentInk, fontSize: 17, fontWeight: "700", letterSpacing: -0.4 },
 
   strip: {
     flexDirection: "row",
@@ -151,10 +208,10 @@ const styles = StyleSheet.create({
     ...SHADOW.soft,
   },
   streakBadge: { backgroundColor: COLORS.accentTint, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
-  streakBadgeText: { fontSize: 15, fontWeight: "800", color: COLORS.accent, letterSpacing: -0.4 },
-  stripLabel: { flex: 1, fontSize: 14, fontWeight: "700", color: COLORS.text, letterSpacing: -0.3 },
-  stripCaption: { fontSize: 12.5, color: COLORS.textFaint, fontWeight: "600" },
-  stripValue: { fontSize: 15, fontWeight: "800", color: COLORS.accent, letterSpacing: -0.4 },
+  streakBadgeText: { fontSize: 15, fontWeight: "700", color: COLORS.accent, letterSpacing: -0.4 },
+  stripLabel: { flex: 1, fontSize: 14, fontWeight: "600", color: COLORS.text, letterSpacing: -0.3 },
+  stripCaption: { fontSize: 12.5, color: COLORS.textFaint, fontWeight: "500" },
+  stripValue: { fontSize: 15, fontWeight: "700", color: COLORS.accent, letterSpacing: -0.4 },
 
   statsRow: { flexDirection: "row", gap: 10, marginTop: 10 },
 
@@ -165,8 +222,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 8,
   },
-  sectionTitle: { fontSize: 15, fontWeight: "700", color: COLORS.text, letterSpacing: -0.4 },
-  link: { fontSize: 13.5, color: COLORS.textDim, fontWeight: "600" },
+  sectionTitle: { fontSize: 15, fontWeight: "600", color: COLORS.text, letterSpacing: -0.4 },
+  link: { fontSize: 13.5, color: COLORS.textDim, fontWeight: "500" },
 
   emptyCard: {
     backgroundColor: COLORS.surface,
@@ -188,6 +245,6 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: "center",
   },
-  tossButtonText: { color: COLORS.text, fontWeight: "700", fontSize: 15, letterSpacing: -0.3 },
+  tossButtonText: { color: COLORS.text, fontWeight: "600", fontSize: 15, letterSpacing: -0.3 },
   tossHint: { fontSize: 12, color: COLORS.textFaint, textAlign: "center", lineHeight: 18, marginTop: 8 },
 });

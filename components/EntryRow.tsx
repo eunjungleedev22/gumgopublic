@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   },
   emoji: { fontSize: 18 },
   info: { flex: 1 },
-  name: { fontSize: 14, fontWeight: "700", color: COLORS.text, letterSpacing: -0.3 },
+  name: { fontSize: 14, fontWeight: "600", color: COLORS.text, letterSpacing: -0.3 },
   sub: { fontSize: 12, color: COLORS.textFaint, marginTop: 1 },
-  price: { fontSize: 14, fontWeight: "700", color: COLORS.accent, letterSpacing: -0.3 },
+  price: { fontSize: 14, fontWeight: "600", color: COLORS.accent, letterSpacing: -0.3 },
 });
