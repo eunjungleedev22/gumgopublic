@@ -139,6 +139,42 @@
 `TossAuth.login()`으로 `authorizationCode`까지만 받고, AccessToken 교환과 사용자
 정보 복호화는 서버에서 해야 하며 복호화 키는 클라이언트에 둘 수 없습니다.
 
+## 서버 (Vercel 서버리스 함수)
+
+`api/` 아래 서버리스 함수로 두었습니다. 정적 빌드(`dist`)와 같은 프로젝트·같은
+도메인에 배포되므로 CSP의 `connect-src 'self'`로 그대로 호출돼요.
+
+| 엔드포인트 | 요청 | 응답 |
+|---|---|---|
+| `POST /api/auth/migration/status` | `{ hash }` | `{ isMapped }` |
+| `POST /api/auth/migration/link` | `{ hash, authorizationCode, referrer? }` | `{ success: true }` |
+
+두 계약은 앱인토스 마이그레이션 가이드가 "파트너사가 직접 구현"하라고 지정한
+형태 그대로입니다. `link`는 이미 매핑된 `hash`에 대해서는 토큰 교환 없이
+성공을 돌려주는 멱등 동작이에요(상태 조회와 쓰기가 경합할 때 클라이언트가
+재시도하기 때문).
+
+### 환경변수
+
+저장소는 Upstash Redis REST 규격이라 Vercel KV를 붙이면 `KV_REST_API_*`가
+자동으로 주입됩니다. 직접 Upstash를 쓰면 `UPSTASH_REDIS_REST_*`도 인식해요.
+
+| 변수 | 용도 |
+|---|---|
+| `KV_REST_API_URL` / `KV_REST_API_TOKEN` | 매핑 저장소 |
+| `TOSS_LOGIN_CLIENT_ID` / `TOSS_LOGIN_CLIENT_SECRET` | 콘솔 발급 |
+| `TOSS_LOGIN_TOKEN_URL` | AccessToken 발급 엔드포인트 |
+| `TOSS_LOGIN_USERINFO_URL` | 사용자 정보 조회 엔드포인트 |
+| `TOSS_LOGIN_DECRYPT_KEY` | 이메일로 받는 복호화 키 — 클라이언트로 절대 내보내지 말 것 |
+
+### 아직 안 채운 부분
+
+`api/_lib/tossLogin.ts`의 `resolveUserKey()` 한 함수뿐입니다. 인가 코드를
+`userKey`로 바꾸는 두 번의 호출인데, 엔드포인트 계약이 앱인토스 "개발 연동하기"
+문서에 있고 그 내용을 아직 확보하지 못했어요. 추측한 URL로 배포하면 운영에서
+조용히 실패하므로, 설정이 없으면 503, 구현이 없으면 501을 명확히 반환하도록
+막아두었습니다. 라우팅·검증·저장·에러 처리는 전부 완성돼 있어요.
+
 ## 에셋 재생성 방법
 
 디자인이나 앱 화면이 바뀌면 아래 순서로 다시 만들면 됩니다. (Noto Sans CJK KR 폰트와
