@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
 
   backRow: { flexDirection: "row", alignItems: "center", gap: 9, marginBottom: 16 },
   backChevron: { fontSize: 19, color: COLORS.textDim, lineHeight: 22 },
-  backLabel: { fontSize: 15, fontWeight: "700", color: COLORS.text, letterSpacing: -0.3 },
+  backLabel: { fontSize: 15, fontWeight: "600", color: COLORS.text, letterSpacing: -0.3 },
 
   summary: {
     backgroundColor: COLORS.hero,
@@ -114,8 +114,8 @@ const styles = StyleSheet.create({
     padding: 20,
     ...SHADOW.lift,
   },
-  summaryLabel: { fontSize: 13, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.2 },
-  summaryValue: { fontSize: 38, fontWeight: "800", color: COLORS.accent, letterSpacing: -1.7, marginTop: 5 },
+  summaryLabel: { fontSize: 13, fontWeight: "600", color: COLORS.textDim, letterSpacing: -0.2 },
+  summaryValue: { fontSize: 38, fontWeight: "700", color: COLORS.accent, letterSpacing: -1.7, marginTop: 5 },
   summaryRow: {
     flexDirection: "row",
     gap: 18,
@@ -125,8 +125,8 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.heroLine,
   },
   metric: { flex: 1 },
-  metricLabel: { fontSize: 12.5, color: COLORS.textDim, fontWeight: "600" },
-  metricValue: { fontSize: 15, fontWeight: "800", color: COLORS.text, letterSpacing: -0.4, marginTop: 3 },
+  metricLabel: { fontSize: 12.5, color: COLORS.textDim, fontWeight: "500" },
+  metricValue: { fontSize: 15, fontWeight: "700", color: COLORS.text, letterSpacing: -0.4, marginTop: 3 },
 
   emptyCard: {
     backgroundColor: COLORS.surface,
@@ -138,6 +138,6 @@ const styles = StyleSheet.create({
   },
   emptyText: { color: COLORS.textFaint, fontSize: 14 },
 
-  dayLabel: { fontSize: 13, fontWeight: "700", color: COLORS.textFaint, letterSpacing: -0.2, marginTop: 18, marginBottom: 8 },
+  dayLabel: { fontSize: 13, fontWeight: "600", color: COLORS.textFaint, letterSpacing: -0.2, marginTop: 18, marginBottom: 8 },
   list: { backgroundColor: COLORS.surface, borderRadius: RADIUS.md, paddingHorizontal: 14, ...SHADOW.soft },
 });

@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
 
   backRow: { flexDirection: "row", alignItems: "center", gap: 9, marginBottom: 16 },
   backChevron: { fontSize: 19, color: COLORS.textDim, lineHeight: 22 },
-  backLabel: { fontSize: 15, fontWeight: "700", color: COLORS.text, letterSpacing: -0.3 },
+  backLabel: { fontSize: 15, fontWeight: "600", color: COLORS.text, letterSpacing: -0.3 },
 
   nameInput: {
     backgroundColor: COLORS.surface,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 15,
     fontSize: 17,
-    fontWeight: "700",
+    fontWeight: "600",
     color: COLORS.text,
     letterSpacing: -0.4,
   },
@@ -172,10 +172,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   matchEmoji: { fontSize: 23 },
-  matchName: { fontSize: 17, fontWeight: "800", color: COLORS.text, letterSpacing: -0.5 },
+  matchName: { fontSize: 17, fontWeight: "700", color: COLORS.text, letterSpacing: -0.5 },
   matchSub: { fontSize: 12.5, color: COLORS.textFaint, marginTop: 2 },
 
-  label: { fontSize: 13, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.3, marginTop: 20, marginBottom: 8 },
+  label: { fontSize: 13, fontWeight: "600", color: COLORS.textDim, letterSpacing: -0.3, marginTop: 20, marginBottom: 8 },
 
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
   chip: {
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.surfaceLine,
   },
-  chipText: { fontSize: 13, color: COLORS.textDim, fontWeight: "600" },
+  chipText: { fontSize: 13, color: COLORS.textDim, fontWeight: "500" },
   servingChip: {
     paddingHorizontal: 15,
     paddingVertical: 10,
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.surfaceLine,
   },
   servingChipOn: { backgroundColor: COLORS.accent, borderColor: COLORS.accent },
-  servingText: { fontSize: 14, color: COLORS.textDim, fontWeight: "700", letterSpacing: -0.2 },
+  servingText: { fontSize: 14, color: COLORS.textDim, fontWeight: "600", letterSpacing: -0.2 },
   servingTextOn: { color: COLORS.accentInk },
 
   priceWrap: {
@@ -209,8 +209,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   priceWrapOn: { borderColor: COLORS.accent },
-  priceInput: { flex: 1, paddingVertical: 14, fontSize: 20, fontWeight: "800", color: COLORS.text, letterSpacing: -0.7 },
-  priceUnit: { fontSize: 15, color: COLORS.textFaint, fontWeight: "600" },
+  priceInput: { flex: 1, paddingVertical: 14, fontSize: 20, fontWeight: "700", color: COLORS.text, letterSpacing: -0.7 },
+  priceUnit: { fontSize: 15, color: COLORS.textFaint, fontWeight: "500" },
 
   stepRow: { flexDirection: "row", gap: 8, marginTop: 10 },
   stepChip: {
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: "center",
   },
-  stepText: { fontSize: 13, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.3 },
+  stepText: { fontSize: 13, fontWeight: "600", color: COLORS.textDim, letterSpacing: -0.3 },
 
   payoff: {
     backgroundColor: COLORS.hero,
@@ -234,10 +234,10 @@ const styles = StyleSheet.create({
     marginTop: 22,
     ...SHADOW.lift,
   },
-  payoffLabel: { fontSize: 13, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.2 },
+  payoffLabel: { fontSize: 13, fontWeight: "600", color: COLORS.textDim, letterSpacing: -0.2 },
   payoffRow: { flexDirection: "row", alignItems: "baseline", gap: 10, marginTop: 8 },
-  payoffMoney: { fontSize: 30, fontWeight: "800", color: COLORS.accent, letterSpacing: -1.3 },
-  payoffKcal: { fontSize: 16, fontWeight: "700", color: COLORS.kcal, letterSpacing: -0.5 },
+  payoffMoney: { fontSize: 30, fontWeight: "700", color: COLORS.accent, letterSpacing: -1.3 },
+  payoffKcal: { fontSize: 16, fontWeight: "600", color: COLORS.kcal, letterSpacing: -0.5 },
 
   cta: {
     backgroundColor: COLORS.accent,
@@ -248,8 +248,8 @@ const styles = StyleSheet.create({
     ...SHADOW.button,
   },
   ctaOff: { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.surfaceLine, shadowOpacity: 0, elevation: 0 },
-  ctaText: { color: COLORS.accentInk, fontSize: 17, fontWeight: "800", letterSpacing: -0.4 },
+  ctaText: { color: COLORS.accentInk, fontSize: 17, fontWeight: "700", letterSpacing: -0.4 },
   ctaTextOff: { color: COLORS.textFaint },
 
-  hint: { textAlign: "center", fontSize: 12.5, color: COLORS.textFaint, fontWeight: "600", marginTop: 11 },
+  hint: { textAlign: "center", fontSize: 12.5, color: COLORS.textFaint, fontWeight: "500", marginTop: 11 },
 });

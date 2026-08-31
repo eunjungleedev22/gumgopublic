@@ -107,17 +107,17 @@ export default function HypnosisScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.trance },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 16, padding: 32 },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 14, padding: 32 },
 
   rings: { ...StyleSheet.absoluteFillObject, alignItems: "center", justifyContent: "center" },
   ring: { position: "absolute", borderWidth: 1.5, borderColor: COLORS.tranceRing },
   disc: { position: "absolute", width: 230, height: 230, borderRadius: 115, backgroundColor: COLORS.tranceDeep },
 
   emoji: { fontSize: 122 },
-  foodName: { fontSize: 14.5, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.3, marginTop: 12 },
+  foodName: { fontSize: 14.5, fontWeight: "600", color: COLORS.textDim, letterSpacing: -0.3, marginTop: 26 },
   stepText: {
     fontSize: 25,
-    fontWeight: "800",
+    fontWeight: "700",
     color: COLORS.text,
     textAlign: "center",
     letterSpacing: -1,

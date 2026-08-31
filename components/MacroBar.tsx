@@ -50,6 +50,6 @@ const styles = StyleSheet.create({
   legendRow: { flexDirection: "row", gap: 16, marginTop: 13 },
   legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },
-  legendLabel: { fontSize: 12.5, color: COLORS.textDim, fontWeight: "600" },
-  legendValue: { fontSize: 12.5, color: COLORS.text, fontWeight: "700", letterSpacing: -0.2 },
+  legendLabel: { fontSize: 12.5, color: COLORS.textDim, fontWeight: "500" },
+  legendValue: { fontSize: 12.5, color: COLORS.text, fontWeight: "600", letterSpacing: -0.2 },
 });

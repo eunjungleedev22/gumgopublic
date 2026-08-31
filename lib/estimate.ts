@@ -77,5 +77,10 @@ export function suggestFoodNames(query: string, limit = 6): string[] {
   const names = Object.keys(FOOD_DB);
   if (!q) return names.slice(0, limit);
 
-  return names.filter((name) => normalize(name).includes(q) || FOOD_DB[name].aliases.some((a) => normalize(a).includes(q))).slice(0, limit);
+  // An exact match is already in the field and echoed by the estimate card, so
+  // offering it a third time as a chip is just noise.
+  return names
+    .filter((name) => normalize(name) !== q)
+    .filter((name) => normalize(name).includes(q) || FOOD_DB[name].aliases.some((a) => normalize(a).includes(q)))
+    .slice(0, limit);
 }

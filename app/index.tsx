@@ -141,7 +141,7 @@ export default function HomeScreen() {
           <Text style={styles.tossButtonText}>토스에서 모으기 →</Text>
         </Pressable>
         <Text style={styles.tossHint}>
-          자동 적립은 아직 지원되지 않아요. 토스 앱이 열리면 직접 이체하면 돼요.
+          자동 적립은 아직 지원되지 않아요.{"\n"}토스 앱이 열리면 직접 이체해 주세요.
         </Text>
       </ScrollView>
     </SafeAreaView>
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   container: { padding: 20, paddingTop: 12, paddingBottom: 40 },
 
   brandRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 13 },
-  wordmark: { fontSize: 14.5, fontWeight: "700", color: COLORS.textDim, letterSpacing: -0.3 },
+  wordmark: { fontSize: 14.5, fontWeight: "600", color: COLORS.textDim, letterSpacing: -0.3 },
   idChip: {
     backgroundColor: COLORS.surface,
     borderWidth: 1,
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   idChipToss: { backgroundColor: COLORS.accentTint, borderColor: COLORS.accentTint },
-  idChipText: { fontSize: 11.5, fontWeight: "700", color: COLORS.textFaint, letterSpacing: -0.2 },
+  idChipText: { fontSize: 11.5, fontWeight: "600", color: COLORS.textFaint, letterSpacing: -0.2 },
   idChipTextToss: { color: COLORS.accent },
 
   hero: {
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     gap: 13,
     ...SHADOW.lift,
   },
-  heroTitle: { fontSize: 23, fontWeight: "800", color: COLORS.text, letterSpacing: -0.9, lineHeight: 30 },
+  heroTitle: { fontSize: 23, fontWeight: "700", color: COLORS.text, letterSpacing: -0.9, lineHeight: 30 },
   input: {
     backgroundColor: COLORS.surface,
     borderWidth: 1,
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     ...SHADOW.button,
   },
-  ctaText: { color: COLORS.accentInk, fontSize: 17, fontWeight: "800", letterSpacing: -0.4 },
+  ctaText: { color: COLORS.accentInk, fontSize: 17, fontWeight: "700", letterSpacing: -0.4 },
 
   strip: {
     flexDirection: "row",
@@ -208,10 +208,10 @@ const styles = StyleSheet.create({
     ...SHADOW.soft,
   },
   streakBadge: { backgroundColor: COLORS.accentTint, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
-  streakBadgeText: { fontSize: 15, fontWeight: "800", color: COLORS.accent, letterSpacing: -0.4 },
-  stripLabel: { flex: 1, fontSize: 14, fontWeight: "700", color: COLORS.text, letterSpacing: -0.3 },
-  stripCaption: { fontSize: 12.5, color: COLORS.textFaint, fontWeight: "600" },
-  stripValue: { fontSize: 15, fontWeight: "800", color: COLORS.accent, letterSpacing: -0.4 },
+  streakBadgeText: { fontSize: 15, fontWeight: "700", color: COLORS.accent, letterSpacing: -0.4 },
+  stripLabel: { flex: 1, fontSize: 14, fontWeight: "600", color: COLORS.text, letterSpacing: -0.3 },
+  stripCaption: { fontSize: 12.5, color: COLORS.textFaint, fontWeight: "500" },
+  stripValue: { fontSize: 15, fontWeight: "700", color: COLORS.accent, letterSpacing: -0.4 },
 
   statsRow: { flexDirection: "row", gap: 10, marginTop: 10 },
 
@@ -222,8 +222,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 8,
   },
-  sectionTitle: { fontSize: 15, fontWeight: "700", color: COLORS.text, letterSpacing: -0.4 },
-  link: { fontSize: 13.5, color: COLORS.textDim, fontWeight: "600" },
+  sectionTitle: { fontSize: 15, fontWeight: "600", color: COLORS.text, letterSpacing: -0.4 },
+  link: { fontSize: 13.5, color: COLORS.textDim, fontWeight: "500" },
 
   emptyCard: {
     backgroundColor: COLORS.surface,
@@ -245,6 +245,6 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: "center",
   },
-  tossButtonText: { color: COLORS.text, fontWeight: "700", fontSize: 15, letterSpacing: -0.3 },
+  tossButtonText: { color: COLORS.text, fontWeight: "600", fontSize: 15, letterSpacing: -0.3 },
   tossHint: { fontSize: 12, color: COLORS.textFaint, textAlign: "center", lineHeight: 18, marginTop: 8 },
 });
